@@ -1,11 +1,14 @@
 '''
 Question 1
-Alongside this notebook is a file daily_quotes.csv (the same one that we used for the Pandas exercises).
+Alongside this notebook is a file daily_quotes.csv (the same one that we used
+for the Pandas exercises).
 
-Using this data write a function that generates a composite of line charts (2 columns wide), that charts the closing price for each symbol in the data.
+Using this data write a function that generates a composite of line charts
+(2 columns wide), that charts the closing price for each symbol in the data.
 
 Solution
-We'll re-use the code that we developed in the Pandas exercises to load the data:
+We'll re-use the code that we developed in the Pandas exercises to load the
+data:
 
 import pandas as pd
 import matplotlib as mpl
@@ -35,7 +38,8 @@ Data columns (total 6 columns):
  5   volume  508 non-null    int64
 dtypes: datetime64[ns](1), float64(4), int64(1)
 memory usage: 27.8+ KB
-We'll need to chart each symbol, but let's just deal with one for now and see how we'll create the chart.
+We'll need to chart each symbol, but let's just deal with one for now and see
+how we'll create the chart.
 
 First I'll set some default themes and chart sizes:
 
@@ -71,7 +75,8 @@ p = ax.plot(
 ax.set_title('AAPL')
 Text(0.5, 1.0, 'AAPL')
 
-Let's write a function to generate a chart given the dataset, a specific symbol, and the axes object we want to use for the chart.
+Let's write a function to generate a chart given the dataset, a specific symbol,
+and the axes object we want to use for the chart.
 
 def add_chart(data, symbol, ax):
     subset = data.loc[symbol, :]
@@ -81,19 +86,23 @@ def add_chart(data, symbol, ax):
         label=symbol
     )
     ax.set_title(symbol)
-We can then use that function to create a plot given the axes we want to plot it on:
+We can then use that function to create a plot given the axes we want to plot
+it on:
 
 fig, ax = plt.subplots()
 add_chart(data, 'GOOG', ax)
 
-Now all we need to do is build up a multi-plot, 2 columns wide with as many rows as needed to accomodate all the symbols.
+Now all we need to do is build up a multi-plot, 2 columns wide with as many
+rows as needed to accomodate all the symbols.
 
 First we'll get the unique symbols in the data set:
 
 symbols = set(data.index)
 symbols
 {'AAPL', 'AMZN', 'GOOG', 'MSFT'}
-The number of columns is set to 2, and the number of rows can be calculated (so it remains general no matter how many symbols are actually present in the data):
+The number of columns is set to 2, and the number of rows can be calculated
+(so it remains general no matter how many symbols are actually present in the
+data):
 
 num_rows = len(symbols) // 2 + len(symbols) % 2
 num_rows
@@ -104,7 +113,8 @@ fig, axes = plt.subplots(num_rows, 2)
 
 Remember that axes is a NumPy array shaped based on the rows and columns.
 
-We're going to want to iterate through all the axes, so we'll reshape it so we can use a simple iteration:
+We're going to want to iterate through all the axes, so we'll reshape it so we
+can use a simple iteration:
 
 axes
 array([[<AxesSubplot:>, <AxesSubplot:>],
@@ -117,12 +127,14 @@ fig, axes = plt.subplots(num_rows, 2)
 for ax, symbol in zip(axes.reshape(axes.size), symbols):
      add_chart(data, symbol, ax)
 
-It would probably be nicer to present the charts based on an alphabeitcal sort of the symbols, so let's do that:
+It would probably be nicer to present the charts based on an alphabeitcal sort
+of the symbols, so let's do that:
 
 symbols = sorted(set(data.index))
 symbols
 ['AAPL', 'AMZN', 'GOOG', 'MSFT']
-Now, we can write a function that encapsulates all this, and let's even allow specifying the number fo columns we want to use for the charts:
+Now, we can write a function that encapsulates all this, and let's even allow
+specifying the number fo columns we want to use for the charts:
 
 def chart_symbols(data, num_cols=2):
     symbols = sorted(set(data.index))
@@ -137,7 +149,9 @@ And we can change the number of columns as well:
 chart_symbols(data, 1)
 
 Question 2
-Expand on your previous function to include an n-day moving average on each chart. (When you calculate the moving average, be careful with the order of the data in each subset of data).
+Expand on your previous function to include an n-day moving average on each
+chart. (When you calculate the moving average, be careful with the order of
+the data in each subset of data).
 
 Solution
 Recall the function we wrote thta actually produces each individual chart:
@@ -152,10 +166,12 @@ def add_chart(data, symbol, ax):
     ax.set_title(symbol)
 This is the function we'll need to modify to add the moving average to the axes.
 
-To calculate an n-day moving average we'll use a windowing function. Let's try it out first, and then add it to the function later.
+To calculate an n-day moving average we'll use a windowing function. Let's try
+it out first, and then add it to the function later.
 
 subset = data.loc['AAPL', :]
-We have to be a bit careful here, because the data is not ordered in ascending date order:
+We have to be a bit careful here, because the data is not ordered in ascending
+date order:
 
 subset
 date	open	high	low	close	volume
@@ -210,7 +226,8 @@ AAPL	136.47600	137.1274	134.96000	136.040	72218368.0
 AAPL	135.87600	136.7494	134.52642	135.762	69108628.0
 127 rows × 5 columns
 
-But this was a little wasteful - we calculated the moving average for every column - instead we should do it just for the close column:
+But this was a little wasteful - we calculated the moving average for every
+column - instead we should do it just for the close column:
 
 subset['close'].rolling(window=5).mean()
 symbol
@@ -226,7 +243,8 @@ AAPL    136.492
 AAPL    136.040
 AAPL    135.762
 Name: close, Length: 127, dtype: float64
-So now we can add this to our chart function, and now that we have two lines on the same plot we'll add the legend as well:
+So now we can add this to our chart function, and now that we have two lines
+on the same plot we'll add the legend as well:
 
 def add_chart(data, symbol, ax, mavg_window_n):
     subset = data.loc[symbol, :].sort_values('date')
@@ -256,10 +274,12 @@ chart_symbols(data)
 chart_symbols(data, 15)
 
 Question 3
-Using the previous charts, add horizontal lines for the 25th, 50th and 75th percentiles of the close price (calculated over the entire time period).
+Using the previous charts, add horizontal lines for the 25th, 50th and 75th
+percentiles of the close price (calculated over the entire time period).
 
 Solution
-First, let's write a function that calculates the n-th percentile from a subset based on the close column, using the quantile method:
+First, let's write a function that calculates the n-th percentile from a subset
+based on the close column, using the quantile method:
 
 def close_percentile(subset, n):
     return subset['close'].quantile(n)
